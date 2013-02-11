@@ -1496,7 +1496,7 @@ mejs.YouTubeApi = {
 	'<param name="movie" value="' + youtubeUrl + '" />' +
 	'<param name="wmode" value="transparent" />' +
 	'<param name="allowScriptAccess" value="always" />' +
-	'<param name="allowFullScreen" value="true" />' +
+	'<param name="allowFullScreen" value="false" />' +
 '</object>';
 		} else {
 		settings.container.innerHTML =
@@ -1956,19 +1956,7 @@ if (typeof jQuery != 'undefined') {
 										media.setCurrentTime(newTime);
 								}
 						}
-				},
-				{
-						keys: [70], // f
-						action: function(player, media) {
-								if (typeof player.enterFullScreen != 'undefined') {
-										if (player.isFullScreen) {
-												player.exitFullScreen();
-										} else {
-												player.enterFullScreen();
-										}
-								}
-						}
-				}					
+				}
 		]		
 	};
 
@@ -2640,9 +2628,9 @@ if (typeof jQuery != 'undefined') {
 			}
 
 			// outer area
-			rail.width(railWidth);
+			rail.width(railWidth - 5);
 			// dark space
-			total.width(railWidth - (total.outerWidth(true) - total.width()));
+			total.width(railWidth - (total.outerWidth(true) - total.width() + 5));
 			
 			if (t.setProgressRail)
 				t.setProgressRail();
