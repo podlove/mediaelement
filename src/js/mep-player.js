@@ -979,7 +979,9 @@
 				t.globalBind('keydown', function(e) {
 						
 						if (player.hasFocus && player.options.enableKeyboard) {
-										
+								if (!player.isVideo) {
+									return;
+								}
 								// find a matching key
 								for (var i=0, il=player.options.keyActions.length; i<il; i++) {
 										var keyAction = player.options.keyActions[i];
