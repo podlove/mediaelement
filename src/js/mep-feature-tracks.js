@@ -22,9 +22,6 @@
 		hasChapters: false,
 
 		buildtracks: function(player, controls, layers, media) {
-			if (!player.isVideo)
-				return;
-
 			if (player.tracks.length == 0)
 				return;
 
@@ -315,7 +312,7 @@
 				if (!hasSubtitles) {
 					t.captionsButton.hide();
 					t.setControlsSize();
-				}													
+				}
 			}		
 		},
 
@@ -332,8 +329,13 @@
 			if (track != null && track.isLoaded) {
 				for (i=0; i<track.entries.times.length; i++) {
 					if (t.media.currentTime >= track.entries.times[i].start && t.media.currentTime <= track.entries.times[i].stop){
-						t.captionsText.html(track.entries.text[i]);
-						t.captions.show().height(0);
+						if(t.captionsText.html() !== track.entries.text[i]){
+							if (player.isVideo) {
+								t.captionsText.html(track.entries.text[i]);
+								t.captions.show().height(0);
+							}
+							t.container.trigger('subtitle', [track.entries.times[i].start, track.entries.times[i].stop, track.entries.text[i]]);
+						}
 						return; // exit out if one is visible;
 					}
 				}

@@ -726,6 +726,7 @@
 
 		setPlayerSize: function(width,height) {
 			var t = this;
+			t.container.trigger('playerresize');
 
 			if (typeof width != 'undefined')
 				t.width = width;
@@ -820,9 +821,9 @@
 			}
 
 			// outer area
-			rail.width(railWidth);
+			rail.width(railWidth - 5);
 			// dark space
-			total.width(railWidth - (total.outerWidth(true) - total.width()));
+			total.width(railWidth - (total.outerWidth(true) - total.width() + 5));
 			
 			if (t.setProgressRail)
 				t.setProgressRail();
