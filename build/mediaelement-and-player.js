@@ -2557,6 +2557,7 @@ if (typeof jQuery != 'undefined') {
 
 		setPlayerSize: function(width,height) {
 			var t = this;
+			t.container.trigger('playerresize');
 
 			if (typeof width != 'undefined')
 				t.width = width;
@@ -2651,9 +2652,9 @@ if (typeof jQuery != 'undefined') {
 			}
 
 			// outer area
-			rail.width(railWidth);
+			rail.width(railWidth - 5);
 			// dark space
-			total.width(railWidth - (total.outerWidth(true) - total.width()));
+			total.width(railWidth - (total.outerWidth(true) - total.width() + 5));
 			
 			if (t.setProgressRail)
 				t.setProgressRail();
@@ -2809,7 +2810,9 @@ if (typeof jQuery != 'undefined') {
 				t.globalBind('keydown', function(e) {
 						
 						if (player.hasFocus && player.options.enableKeyboard) {
-										
+								if (!player.isVideo) {
+									return;
+								}
 								// find a matching key
 								for (var i=0, il=player.options.keyActions.length; i<il; i++) {
 										var keyAction = player.options.keyActions[i];
@@ -4022,9 +4025,6 @@ if (typeof jQuery != 'undefined') {
 		hasChapters: false,
 
 		buildtracks: function(player, controls, layers, media) {
-			if (!player.isVideo)
-				return;
-
 			if (player.tracks.length == 0)
 				return;
 
@@ -4315,7 +4315,7 @@ if (typeof jQuery != 'undefined') {
 				if (!hasSubtitles) {
 					t.captionsButton.hide();
 					t.setControlsSize();
-				}													
+				}
 			}		
 		},
 
@@ -4332,8 +4332,13 @@ if (typeof jQuery != 'undefined') {
 			if (track != null && track.isLoaded) {
 				for (i=0; i<track.entries.times.length; i++) {
 					if (t.media.currentTime >= track.entries.times[i].start && t.media.currentTime <= track.entries.times[i].stop){
-						t.captionsText.html(track.entries.text[i]);
-						t.captions.show().height(0);
+						if(t.captionsText.html() !== track.entries.text[i]){
+							if (player.isVideo) {
+								t.captionsText.html(track.entries.text[i]);
+								t.captions.show().height(0);
+							}
+							t.container.trigger('subtitle', [track.entries.times[i].start, track.entries.times[i].stop, track.entries.text[i]]);
+						}
 						return; // exit out if one is visible;
 					}
 				}
