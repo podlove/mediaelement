@@ -330,7 +330,7 @@
 				for (i=0; i<track.entries.times.length; i++) {
 					if (t.media.currentTime >= track.entries.times[i].start && t.media.currentTime <= track.entries.times[i].stop){
 						if(t.captionsText.html() !== track.entries.text[i]){
-							if (player.isVideo) {
+							if (this.isVideo) {
 								t.captionsText.html(track.entries.text[i]);
 								t.captions.show().height(0);
 							}
