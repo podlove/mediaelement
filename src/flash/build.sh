@@ -26,8 +26,8 @@
 #       Remove the -strict compiler option to see warnings coming from YouTube API calls.
 #
 ####################
-FLEXVER=flex_sdk_4.6
-FLEXPATH=./$FLEXVER
+FLEXVER=4.6
+FLEXPATH=./flex_sdk/$FLEXVER
 
 ## flash/mediaelement.swf - debug
 $FLEXPATH/bin/mxmlc -debug -strict=false -warnings=true ./FlashMediaElement.as -o ../../build/flashmediaelement-debug.swf -library-path+="$FLEXPATH/lib" -include-libraries+=./flashmediaelement.swc -use-network=true -headless-server -static-link-runtime-shared-libraries

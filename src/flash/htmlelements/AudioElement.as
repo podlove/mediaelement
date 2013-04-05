@@ -10,6 +10,7 @@ package htmlelements
   import flash.media.SoundLoaderContext;
   import flash.media.SoundTransform;
   import flash.net.URLRequest;
+  import flash.net.URLRequestHeader;
   import flash.utils.Timer;
 
 
@@ -46,6 +47,9 @@ package htmlelements
     private var _element:FlashMediaElement;
     private var _timer:Timer;
     private var _firedCanPlay:Boolean = false;
+
+    private var _myxrequest:URLRequest;
+    private var _myxheader:URLRequestHeader;
 
     public function setSize(width:Number, height:Number):void {
       // do nothing!
@@ -164,14 +168,23 @@ package htmlelements
 
     public function load():void {
 
-      if (_currentUrl == "")
+      if (_currentUrl == "") {
         return;
-
+      }
+      
       _sound = new Sound();
-      //sound.addEventListener(IOErrorEvent.IO_ERROR,errorHandler);
+      _myxrequest = new URLRequest();
+      _myxrequest.url = _currentUrl;
+      
       _sound.addEventListener(ProgressEvent.PROGRESS,progressHandler);
       _sound.addEventListener(Event.ID3,id3Handler);
-      _sound.load(new URLRequest(_currentUrl));
+      
+      try {
+        _sound.load(_myxrequest);
+      } catch (e:Error) {
+        trace(e);
+      }
+      
       _currentTime = 0;
       
       sendEvent(HtmlMediaEvent.LOADSTART);
