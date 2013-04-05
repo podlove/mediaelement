@@ -1,6 +1,7 @@
 # silverlight stuff
 src/silverlight/obj/*
 src/silverlight/Bin/*
+src/flash/flex_sdk/*
 build/AppManifest.xaml
 build/SilverlightMediaElementTestPage.html
 build/SilverlightMediaElement.pdb

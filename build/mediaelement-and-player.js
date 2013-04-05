@@ -3617,8 +3617,7 @@ if (typeof jQuery != 'undefined') {
 				fullscreenBtn =
 					$('<div class="mejs-button mejs-fullscreen-button">' +
 						'<button type="button" aria-controls="' + t.id + '" title="' + t.options.fullscreenText + '"></button>' +
-					'</div>')
-					.appendTo(controls);
+					'</div>').appendTo(controls);
 
 				if (t.media.pluginType === 'native' || (!t.options.usePluginFullScreen && !mejs.MediaFeatures.isFirefox)) {
 
