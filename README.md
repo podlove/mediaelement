@@ -15,62 +15,63 @@ _MediaElementPlayer: HTML5 `<video>` and `<audio>` player_
 A complete HTML/CSS audio/video player built on top `MediaElement.js` and `jQuery`. Many great HTML5 players have a completely separate Flash UI in fallback mode, but MediaElementPlayer.js uses the same HTML/CSS for all players.
 
 ### 1. Add Script and Stylesheet
-
-	<script src="jquery.js"></script>
-	<script src="mediaelement-and-player.min.js"></script>
-	<link rel="stylesheet" href="mediaelementplayer.css" />
-
+```html
+<script src="jquery.js"></script>
+<script src="mediaelement-and-player.min.js"></script>
+<link rel="stylesheet" href="mediaelementplayer.css" />
+```
 ### 2. Option A: Single H.264 file
 
 If your users have JavaScript and Flash, this is the easist route for all browsers and mobile devices.
-	
-	<video src="myvideo.mp4" width="320" height="240"></video>
-
+```html	
+<video src="myvideo.mp4" width="320" height="240"></video>
+```
 ### 2. Option B: Multiple codecs with Flash fall-through when JavaScript is disabled
 
 This includes multiple codecs for various browsers (H.264 for IE and Safari, WebM for Chrome, Firefox 4, and Opera, Ogg for Firefox 3) as well as a Flash fallback for non HTML5 browsers with JavaScript disabled.
 
-	<video width="320" height="240" poster="poster.jpg" controls="controls" preload="none">
-		<source type="video/mp4" src="myvideo.mp4" />
-		<source type="video/webm" src="myvideo.webm" />
-		<source type="video/ogg" src="myvideo.ogv" />
-		<object width="320" height="240" type="application/x-shockwave-flash" data="flashmediaelement.swf">
-			<param name="movie" value="flashmediaelement.swf" /> 
-			<param name="flashvars" value="controls=true&amp;poster=myvideo.jpg&amp;file=myvideo.mp4" /> 		
-			<img src="myvideo.jpg" width="320" height="240" title="No video playback capabilities" />
-		</object>
-	</video>
-
+```html
+<video width="320" height="240" poster="poster.jpg" controls="controls" preload="none">
+	<source type="video/mp4" src="myvideo.mp4" />
+	<source type="video/webm" src="myvideo.webm" />
+	<source type="video/ogg" src="myvideo.ogv" />
+	<object width="320" height="240" type="application/x-shockwave-flash" data="flashmediaelement.swf">
+		<param name="movie" value="flashmediaelement.swf" /> 
+		<param name="flashvars" value="controls=true&amp;poster=myvideo.jpg&amp;file=myvideo.mp4" /> 		
+		<img src="myvideo.jpg" width="320" height="240" title="No video playback capabilities" />
+	</object>
+</video>
+```
 ### 3. Run startup script
 
 Make sure this is not in the `<head>` tag or iOS 3 will fail.
+```html
+<script>
+// jQuery method
+$('video').mediaelementplayer();
+</script>
 
-	<script>
-	// jQuery method
-	$('video').mediaelementplayer();
-	</script>
-	
-	<script>
-	// normal JavaScript 
-	var player = new MediaElementPlayer('#player');
-	</script>	
-
+<script>
+// normal JavaScript 
+var player = new MediaElementPlayer('#player');
+</script>	
+```
 ## How it Works: 
 _MediaElement.js: HTML5 `<video>` and `<audio>` shim_
 
 `MediaElement.js` is a set of custom Flash and Silverlight plugins that mimic the HTML5 MediaElement API for browsers that don't support HTML5 or don't support the media codecs you're using. 
 Instead of using Flash as a _fallback_, Flash is used to make the browser seem HTML5 compliant and enable codecs like H.264 (via Flash) and even WMV (via Silverlight) on all browsers.
+```html
+<script src="mediaelement.js"></script>
+<video src="myvideo.mp4" width="320" height="240"></video>
 
-	<script src="mediaelement.js"></script>
-	<video src="myvideo.mp4" width="320" height="240"></video>
-	
-	<script>
-	var v = document.getElementsByTagName("video")[0];
-	new MediaElement(v, {success: function(media) {
-		media.play();
-	}});
-	</script>
-
+<script>
+var v = document.getElementsByTagName("video")[0];
+new MediaElement(v, {success: function(media) {
+	media.play();
+}});
+</script>
+```
 You can use this as a standalone library if you wish, or just stick with the full MediaElementPlayer.
 
 ### Version History
@@ -81,11 +82,92 @@ You can use this as a standalone library if you wish, or just stick with the ful
 * Full support for Ender.js, including mediaelement-and-player-standalone which includes ender.
 * thin line when controls are off
 * system-wide events
-* playlist builder
 * Ogg/Theora playback
-* Better alignment with native MediaElement (using shimichanga.com techniques)	
+* Better alignment with native MediaElement (using shimichanga.com techniques)
 
-*2.11.0 (2012/03/13)*
+
+*2.13.1 (2013/09/?06)*
+
+* Support for fullscreen in IE11 beta
+
+*2.13.0 (2013/09/01)*
+
+* BREAKING FLASH SECURITY CHANGE: Removed `allowDomain("*")` by default. If you use MediaElement.js on a different domain use the `flashmediaelement-cdn.swf` file (nacin) https://github.com/johndyer/mediaelement/pull/956
+* Use only FlashVars and ignore parameters passed via query string.
+* Force LTR in controls (for RTL users) (nacin) https://github.com/johndyer/mediaelement/pull/958
+
+*2.12.1 (2013/08/26)*
+
+* Remove all `console.log` statements in `Builder.py` JD
+* More i18n fixes for Wordpress (SergeyBiryukov) https://github.com/johndyer/mediaelement/pull/940
+* Fix touch detection in QtWebKit (peterbrook) https://github.com/johndyer/mediaelement/pull/939
+* Added configuration option httpsBasicAuthSite fix sites using HTTPS basic authentication (benroy73) https://github.com/johndyer/mediaelement/pull/937
+* Fixed backlight plugin error (eviweb) https://github.com/johndyer/mediaelement/pull/932
+* Fix some wrong dates on the change log (heartcode) https://github.com/johndyer/mediaelement/pull/930
+* Add a mejs-fullscreen css class on the root element (fbuecklers) https://github.com/johndyer/mediaelement/pull/925
+* fix for ff switch between fullscreen and normal mode (fbuecklers) https://github.com/johndyer/mediaelement/pull/924
+* Multiple fixes: old issue #548, current issues #754 and #902 (peterh-capella) https://github.com/johndyer/mediaelement/pull/923
+* fix firefox detect 100% mode issue (KaptinLin ) https://github.com/johndyer/mediaelement/pull/919
+* Option to show the poster when the video is ended (LeResKP) https://github.com/johndyer/mediaelement/pull/891
+* Fix for Chrome autoplaying when forcing Flash (tjsnyder) https://github.com/johndyer/mediaelement/pull/889
+* Allow SWF to work over insecure domain (sebablanco ) https://github.com/johndyer/mediaelement/pull/897
+* Corrected buffering height on CSS (SourceR85 ) https://github.com/johndyer/mediaelement/pull/875
+* CSS cleanup (awittdesigns) https://github.com/johndyer/mediaelement/pull/883
+
+
+*2.12.0 (2013/06/02)*
+
+* Removed old media files from repo (reduced filesize from 150MB to 25MB)
+* Added `test.html` to `/tests/` folder to use JS files in `/src/` folder
+* Fullscreen plugin player toggles play/pause when controls are clicked (JeffreyATW) https://github.com/johndyer/mediaelement/pull/742 
+* Making use of pluginWidth & pluginHeight (simonschuh) https://github.com/johndyer/mediaelement/pull/837
+* Proportional poster images (IE9+ Chrome, Safari, Firefox) (eyefood) https://github.com/johndyer/mediaelement/pull/838
+* Fixed video resolution on seek in flash (efEris) https://github.com/johndyer/mediaelement/pull/839
+* Option for custom error message when no plugins are found. (svoynow-lz) https://github.com/johndyer/mediaelement/pull/842
+* Fix for Safari to play video on HTTPS site (benroy73) https://github.com/johndyer/mediaelement/pull/845
+* Fixes Mute/UnMute when playing from a YouTube source (mbaker3) https://github.com/johndyer/mediaelement/pull/848
+* i18n fixes for better compatibility with WordPress (SergeyBiryukov) https://github.com/johndyer/mediaelement/pull/850
+* Fixing invalid characters restrictions for URLs (sebablanco) https://github.com/johndyer/mediaelement/pull/859
+* Checking for pluginType on media instead of mediaelementplayer in Fullscreen (JeffreyATW) https://github.com/johndyer/mediaelement/pull/865
+* Problem with IE9 on Windows 7 N / Windows 7 KN without WMP installed (sarvaje) https://github.com/johndyer/mediaelement/pull/868
+* Cleanup stylesheet (jawittdesigns)  https://github.com/johndyer/mediaelement/pull/867
+* Properly treat namespace-only events for `globalUnbind()` (odnamrataizem) https://github.com/johndyer/mediaelement/pull/878
+* Fixed issue with slash character separating time (S2) https://github.com/johndyer/mediaelement/pull/879
+
+*2.11.3	(2013/04/13)*
+
+* Change to `getScriptPath` to allow querystring variables to be added (for Wordpress Core)
+
+*2.11.2	(2013/04/12)*
+
+* Fixed overly aggressive XSS testing (excluding forward slashes)
+* Fixed line endings on Flash (*.as) files (markjaquith) (https://github.com/johndyer/mediaelement/pull/834)
+* Included protocol relative URL for YouTube (Dan Tsosie) (https://github.com/johndyer/mediaelement/pull/832)
+
+*2.11.1	(2013/04/11)*
+
+Major changes
+
+* Removed Ogg, WebM, and MP3 files to keep download under 10MB. Files are now at https://github.com/johndyer/mediaelement-files
+* Simple Flash Pseudo-streaming [set enablePseudoStreaming:true, pseudoStreamingStartQueryParam:'start'] (BryanMorgan) (https://github.com/johndyer/mediaelement/pull/814)
+* Fixed possible XSS attack through `file=` parameter in `flashmediaelement.swf`
+
+Fixes and updates
+
+* Protocol relative YouTube URLs for `iframe` API (dtsosie) (https://github.com/johndyer/mediaelement/pull/825)
+* Added aria-label to all button elements (Luzifer) (https://github.com/johndyer/mediaelement/pull/824)
+* Fixed preroll adclick URL (johndyer)
+* Traditional chinese locale strings for i18n module (latzt) (https://github.com/johndyer/mediaelement/pull/820)
+* Allow captions on audio player (LeResKP) (https://github.com/johndyer/mediaelement/pull/819)
+* Fix incorrect path returned by `getScriptPath()` (Ciki) (Fix incorrect path returned by getScriptPath())
+* Overhauling hover div creation and placement (JeffreyATW) (https://github.com/johndyer/mediaelement/pull/813)
+* Clear timeout for second fullscreen stretch attempt (JeffreyATW) (https://github.com/johndyer/mediaelement/pull/812)
+* fix type resolution when extension is uppercased (jbdemonte) (https://github.com/johndyer/mediaelement/pull/801)
+* "splice is not a function" fix on `MediaElementPlayer.remove()` (odnamrataizem) (https://github.com/johndyer/mediaelement/pull/799)
+* Make Flash stage handle CLICK rather than MOUSE_DOWN (odnamrataizem) (https://github.com/johndyer/mediaelement/pull/804)
+
+
+*2.11.0 (2013/03/13)*
 
 * Preroll ads manager
 * VAST ads plugin (sponsored by Minito Video)
@@ -105,7 +187,7 @@ You can use this as a standalone library if you wish, or just stick with the ful
 * [cc] button can now be a toggle when there's just one track (LeResKP) https://github.com/johndyer/mediaelement/pull/793
 * fixed error when srclang was missing
 
-*2.10.3 (2012/01/27)*
+*2.10.3 (2013/01/27)*
 
 * Fix broken scrollbar from API reference error (peterbrook) (https://github.com/johndyer/mediaelement/pull/739)
 

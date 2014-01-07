@@ -5,7 +5,7 @@
 		// this will automatically turn on a <track>
 		startLanguage: '',
 
-		tracksText: 'Captions/Subtitles',
+		tracksText: mejs.i18n.t('Captions/Subtitles'),
 		
 		// option to remove the [cc] button when no <track kind="subtitles"> are present
 		hideCaptionsButtonWhenEmpty: true,
@@ -29,6 +29,11 @@
 				i, 
 				options = '';
 
+			if (t.domNode.textTracks) { // if browser will do native captions, prefer mejs captions, loop through tracks and hide
+				for (var i = t.domNode.textTracks.length - 1; i >= 0; i--) {
+					t.domNode.textTracks[i].mode = "hidden";
+				}
+			}
 			player.chapters = 
 					$('<div class="mejs-chapters mejs-layer"></div>')
 						.prependTo(layers).hide();
@@ -38,12 +43,12 @@
 			player.captionsText = player.captions.find('.mejs-captions-text');
 			player.captionsButton = 
 					$('<div class="mejs-button mejs-captions-button">'+
-						'<button type="button" aria-controls="' + t.id + '" title="' + t.options.tracksText + '"></button>'+
+						'<button type="button" aria-controls="' + t.id + '" title="' + t.options.tracksText + '" aria-label="' + t.options.tracksText + '"></button>'+
 						'<div class="mejs-captions-selector">'+
 							'<ul>'+
 								'<li>'+
 									'<input type="radio" name="' + player.id + '_captions" id="' + player.id + '_captions_none" value="none" checked="checked" />' +
-									'<label for="' + player.id + '_captions_none">None</label>'+
+									'<label for="' + player.id + '_captions_none">' + mejs.i18n.t('None') +'</label>'+
 								'</li>'	+
 							'</ul>'+
 						'</div>'+
@@ -312,7 +317,7 @@
 				if (!hasSubtitles) {
 					t.captionsButton.hide();
 					t.setControlsSize();
-				}
+				}													
 			}		
 		},
 
@@ -329,13 +334,8 @@
 			if (track != null && track.isLoaded) {
 				for (i=0; i<track.entries.times.length; i++) {
 					if (t.media.currentTime >= track.entries.times[i].start && t.media.currentTime <= track.entries.times[i].stop){
-						if(t.captionsText.html() !== track.entries.text[i]){
-							if (this.isVideo) {
-								t.captionsText.html(track.entries.text[i]);
-								t.captions.show().height(0);
-							}
-							t.container.trigger('subtitle', [track.entries.times[i].start, track.entries.times[i].stop, track.entries.text[i]]);
-						}
+						t.captionsText.html(track.entries.text[i]);
+						t.captions.show().height(0);
 						return; // exit out if one is visible;
 					}
 				}
@@ -379,7 +379,7 @@
 			
 				if (!img.is(':visible') && !img.is(':animated')) {
 				
-					console.log('showing existing slide');			
+					//console.log('showing existing slide');			
 					
 					img.fadeIn()
 						.siblings(':visible')

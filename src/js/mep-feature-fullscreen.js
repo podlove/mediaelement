@@ -12,8 +12,6 @@
 
 		isNativeFullScreen: false,
 
-		docStyleOverflow: null,
-
 		isInIframe: false,
 
 		buildfullscreen: function(player, controls, layers, media) {
@@ -28,16 +26,17 @@
 
 				// chrome doesn't alays fire this in an iframe
 				var func = function(e) {
-
-					if (mejs.MediaFeatures.isFullScreen()) {
-						player.isNativeFullScreen = true;
-						// reset the controls once we are fully in full screen
-						player.setControlsSize();
-					} else {
-						player.isNativeFullScreen = false;
-						// when a user presses ESC
-						// make sure to put the player back into place
-						player.exitFullScreen();
+					if (player.isFullScreen) {
+						if (mejs.MediaFeatures.isFullScreen()) {
+							player.isNativeFullScreen = true;
+							// reset the controls once we are fully in full screen
+							player.setControlsSize();
+						} else {
+							player.isNativeFullScreen = false;
+							// when a user presses ESC
+							// make sure to put the player back into place
+							player.exitFullScreen();
+						}
 					}
 				};
 
@@ -54,8 +53,9 @@
 				container = player.container,
 				fullscreenBtn =
 					$('<div class="mejs-button mejs-fullscreen-button">' +
-						'<button type="button" aria-controls="' + t.id + '" title="' + t.options.fullscreenText + '"></button>' +
-					'</div>').appendTo(controls);
+						'<button type="button" aria-controls="' + t.id + '" title="' + t.options.fullscreenText + '" aria-label="' + t.options.fullscreenText + '"></button>' +
+					'</div>')
+					.appendTo(controls);
 
 				if (t.media.pluginType === 'native' || (!t.options.usePluginFullScreen && !mejs.MediaFeatures.isFirefox)) {
 
@@ -107,89 +107,116 @@
 							restoreControls = function() {
 								if (fullscreenIsDisabled) {
 									// hide the hovers
-									videoHoverDiv.hide();
-									controlsLeftHoverDiv.hide();
-									controlsRightHoverDiv.hide();
+									for (var i in hoverDivs) {
+										hoverDivs[i].hide();
+									}
 
 									// restore the control bar
 									fullscreenBtn.css('pointer-events', '');
 									t.controls.css('pointer-events', '');
 
+									// prevent clicks from pausing video
+									t.media.removeEventListener('click', t.clickToPlayPauseCallback);
+
 									// store for later
 									fullscreenIsDisabled = false;
 								}
 							},
-							videoHoverDiv = $('<div class="mejs-fullscreen-hover" />').appendTo(t.container).mouseover(restoreControls),
-							controlsLeftHoverDiv = $('<div class="mejs-fullscreen-hover"  />').appendTo(t.container).mouseover(restoreControls),
-							controlsRightHoverDiv = $('<div class="mejs-fullscreen-hover"  />').appendTo(t.container).mouseover(restoreControls),
+							hoverDivs = {},
+							hoverDivNames = ['top', 'left', 'right', 'bottom'],
+							i, len,
 							positionHoverDivs = function() {
-								var style = {position: 'absolute', top: 0, left: 0}; //, backgroundColor: '#f00'};
-								videoHoverDiv.css(style);
-								controlsLeftHoverDiv.css(style);
-								controlsRightHoverDiv.css(style);
+								var fullScreenBtnOffsetLeft = fullscreenBtn.offset().left - t.container.offset().left,
+									fullScreenBtnOffsetTop = fullscreenBtn.offset().top - t.container.offset().top,
+									fullScreenBtnWidth = fullscreenBtn.outerWidth(true),
+									fullScreenBtnHeight = fullscreenBtn.outerHeight(true),
+									containerWidth = t.container.width(),
+									containerHeight = t.container.height();
+
+								for (i in hoverDivs) {
+									hoverDivs[i].css({position: 'absolute', top: 0, left: 0}); //, backgroundColor: '#f00'});
+								}
 
 								// over video, but not controls
-								videoHoverDiv
-									.width( t.container.width() )
-									.height( t.container.height() - t.controls.height() );
+								hoverDivs['top']
+									.width( containerWidth )
+									.height( fullScreenBtnOffsetTop );
 
 								// over controls, but not the fullscreen button
-								var fullScreenBtnOffset = fullscreenBtn.offset().left - t.container.offset().left;
-									fullScreenBtnWidth = fullscreenBtn.outerWidth(true);
-
-								controlsLeftHoverDiv
-									.width( fullScreenBtnOffset )
-									.height( t.controls.height() )
-									.css({top: t.container.height() - t.controls.height()});
+								hoverDivs['left']
+									.width( fullScreenBtnOffsetLeft )
+									.height( fullScreenBtnHeight )
+									.css({top: fullScreenBtnOffsetTop});
 
 								// after the fullscreen button
-								controlsRightHoverDiv
-									.width( t.container.width() - fullScreenBtnOffset - fullScreenBtnWidth )
-									.height( t.controls.height() )
-									.css({top: t.container.height() - t.controls.height(),
-										 left: fullScreenBtnOffset + fullScreenBtnWidth});
+								hoverDivs['right']
+									.width( containerWidth - fullScreenBtnOffsetLeft - fullScreenBtnWidth )
+									.height( fullScreenBtnHeight )
+									.css({top: fullScreenBtnOffsetTop,
+										 left: fullScreenBtnOffsetLeft + fullScreenBtnWidth});
+
+								// under the fullscreen button
+								hoverDivs['bottom']
+									.width( containerWidth )
+									.height( containerHeight - fullScreenBtnHeight - fullScreenBtnOffsetTop )
+									.css({top: fullScreenBtnOffsetTop + fullScreenBtnHeight});
 							};
 
 						t.globalBind('resize', function() {
 							positionHoverDivs();
 						});
 
+						for (i = 0, len = hoverDivNames.length; i < len; i++) {
+							hoverDivs[hoverDivNames[i]] = $('<div class="mejs-fullscreen-hover" />').appendTo(t.container).mouseover(restoreControls).hide();
+						}
+
 						// on hover, kill the fullscreen button's HTML handling, allowing clicks down to Flash
-						fullscreenBtn
-							.mouseover(function() {
+						fullscreenBtn.on('mouseover',function() {
 
-								if (!t.isFullScreen) {
+							if (!t.isFullScreen) {
 
-									var buttonPos = fullscreenBtn.offset(),
-										containerPos = player.container.offset();
+								var buttonPos = fullscreenBtn.offset(),
+									containerPos = player.container.offset();
 
-									// move the button in Flash into place
-									media.positionFullscreenButton(buttonPos.left - containerPos.left, buttonPos.top - containerPos.top, false);
+								// move the button in Flash into place
+								media.positionFullscreenButton(buttonPos.left - containerPos.left, buttonPos.top - containerPos.top, false);
 
-									// allows click through
-									fullscreenBtn.css('pointer-events', 'none');
-									t.controls.css('pointer-events', 'none');
+								// allows click through
+								fullscreenBtn.css('pointer-events', 'none');
+								t.controls.css('pointer-events', 'none');
 
-									// show the divs that will restore things
-									videoHoverDiv.show();
-									controlsRightHoverDiv.show();
-									controlsLeftHoverDiv.show();
-									positionHoverDivs();
+								// restore click-to-play
+								t.media.addEventListener('click', t.clickToPlayPauseCallback);
 
-									fullscreenIsDisabled = true;
+								// show the divs that will restore things
+								for (i in hoverDivs) {
+									hoverDivs[i].show();
 								}
 
-							});
+								positionHoverDivs();
+
+								fullscreenIsDisabled = true;
+							}
+
+						});
 
 						// restore controls anytime the user enters or leaves fullscreen
 						media.addEventListener('fullscreenchange', function(e) {
+							t.isFullScreen = !t.isFullScreen;
+							// don't allow plugin click to pause video - messes with
+							// plugin's controls
+							if (t.isFullScreen) {
+								t.media.removeEventListener('click', t.clickToPlayPauseCallback);
+							} else {
+								t.media.addEventListener('click', t.clickToPlayPauseCallback);
+							}
 							restoreControls();
 						});
 
 
 						// the mouseout event doesn't work on the fullscren button, because we already killed the pointer-events
 						// so we use the document.mousemove event to restore controls when the mouse moves outside the fullscreen button
-						/*
+
 						t.globalBind('mousemove', function(e) {
 
 							// if the mouse is anywhere but the fullsceen button, then restore it all
@@ -209,7 +236,7 @@
 								}
 							}
 						});
-						*/
+
 
 
 					} else {
@@ -217,7 +244,7 @@
 						// the hover state will show the fullscreen button in Flash to hover up and click
 
 						fullscreenBtn
-							.mouseover(function() {
+							.on('mouseover', function() {
 
 								if (hideTimeout !== null) {
 									clearTimeout(hideTimeout);
@@ -230,7 +257,7 @@
 								media.positionFullscreenButton(buttonPos.left - containerPos.left, buttonPos.top - containerPos.top, true);
 
 							})
-							.mouseout(function() {
+							.on('mouseout', function() {
 
 								if (hideTimeout !== null) {
 									clearTimeout(hideTimeout);
@@ -260,6 +287,8 @@
 			player.exitFullScreen();
 		},
 
+        containerSizeTimeout: null,
+
 		enterFullScreen: function() {
 
 			var t = this;
@@ -271,10 +300,8 @@
 				return;
 			}
 
-			// store overflow
-			docStyleOverflow = document.documentElement.style.overflow;
 			// set it to not show scroll bars so 100% will work
-			document.documentElement.style.overflow = 'hidden';
+            $(document.documentElement).addClass('mejs-fullscreen');
 
 			// store sizing
 			normalHeight = t.container.height();
@@ -352,13 +379,13 @@
 			// Only needed for safari 5.1 native full screen, can cause display issues elsewhere
 			// Actually, it seems to be needed for IE8, too
 			//if (mejs.MediaFeatures.hasTrueNativeFullScreen) {
-				setTimeout(function() {
+				t.containerSizeTimeout = setTimeout(function() {
 					t.container.css({width: '100%', height: '100%'});
 					t.setControlsSize();
 				}, 500);
 			//}
 
-			if (t.pluginType === 'native') {
+			if (t.media.pluginType === 'native') {
 				t.$media
 					.width('100%')
 					.height('100%');
@@ -390,6 +417,9 @@
 
 			var t = this;
 
+            // Prevent container from attempting to stretch a second time
+            clearTimeout(t.containerSizeTimeout);
+
 			// firefox can't adjust plugins
 			if (t.media.pluginType !== 'native' && mejs.MediaFeatures.isFirefox) {
 				t.media.setFullscreen(false);
@@ -403,7 +433,7 @@
 			}
 
 			// restore scroll bars to document
-			document.documentElement.style.overflow = docStyleOverflow;
+            $(document.documentElement).removeClass('mejs-fullscreen');
 
 			t.container
 				.removeClass('mejs-container-fullscreen')
@@ -411,12 +441,12 @@
 				.height(normalHeight);
 				//.css({position: '', left: '', top: '', right: '', bottom: '', overflow: 'inherit', width: normalWidth + 'px', height: normalHeight + 'px', 'z-index': 1});
 
-			if (t.pluginType === 'native') {
+			if (t.media.pluginType === 'native') {
 				t.$media
 					.width(normalWidth)
 					.height(normalHeight);
 			} else {
-				t.container.find('object embed')
+				t.container.find('.mejs-shim')
 					.width(normalWidth)
 					.height(normalHeight);
 
